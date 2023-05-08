@@ -30,7 +30,7 @@ df.columns = df.iloc[0]
 df = df.drop(df.index[0])
 df = df.drop(['Notes','Invoice No.', 'Original Amount', 'Currency'], axis=1)
 df = df[~df['Client'].str.contains('TBF')]
-print(df)
+
 
 # %%
 df['Date Invoice']      = df['Date Invoice'].replace("", 0)
@@ -46,8 +46,6 @@ df['Date Paid']         = df['Date Paid'].astype(int)
 df['EQ VND (auto)']     = df['EQ VND (auto)'].astype(float)
 df['Paid VND']          = df['Paid VND'].astype(float)
 
-df['EQ VND (auto)']     = df['EQ VND (auto)'].astype(int)
-df['Paid VND']          = df['Paid VND'].astype(int)
 
 print(df.info())
 
@@ -66,7 +64,7 @@ df['Date Paid']     = df['Date Paid'].apply(convert_date)
 df['Date Invoice']  = pd.to_datetime(df['Date Invoice'])
 df['Date Due']      = pd.to_datetime(df['Date Due'])
 df['Date Paid']     = pd.to_datetime(df['Date Paid'])
-print(df)
+
 
 # %%
 df['Date Invoice']          = df['Date Invoice'].dt.date
@@ -79,26 +77,13 @@ df
 
 chart2   =  make_subplots ( specs = [[{ "secondary_y" :  True}]]) 
 chart2 .add_trace(
-        go.Bar(x=df['Date Invoice'], y=df['Client'],
+        go.Bar(x=df['Date Invoice'], y=df['EQ VND (auto)'],
                name= 'Participants by date',
                marker_color = '#333333', 
                text=df['Client']),
                secondary_y=False)
 
-chart2 .update_layout(yaxis2 = dict(range = [0,10000]),
-                      yaxis1 = dict (range = [0,10000]),
-                      xaxis = dict(type='date',
-                                nticks=40,
-                                tickformat="%d\n%b - %Y",
-                                tickangle=0,)
-                        )
-chart2.update_layout(legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=-0.3,
-            xanchor="left",
-            x=0.05
-            ))
+
 
 st.plotly_chart(chart2, use_container_width=True)
 # %%
