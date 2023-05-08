@@ -14,6 +14,8 @@ from datetime import date, datetime, timedelta
 st.set_page_config(page_icon= 'https://static.wixstatic.com/media/91d4d0_50c2e78106264db2a9ddda29a7ad0503~mv2.png/v1/fit/w_2500,h_1330,al_c/91d4d0_50c2e78106264db2a9ddda29a7ad0503~mv2.png',page_title='THE BIM FACTORY', layout='wide')
 st.title('BIM Fee for Raffles MUR TD & SD')
 
+st.sidebar.header("Options filter")
+
 # %%
 ss_cred_path = r'D:\Documents\Ty\THE BIM FACTORY 4.7.2022\Streamlit_app\credentials2.json' # Your path to the json credential file
 scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive'] # define the scope
@@ -28,6 +30,7 @@ df.columns = df.iloc[0]
 df = df.drop(df.index[0])
 df = df.drop(['Notes','Invoice No.', 'Original Amount', 'Currency'], axis=1)
 df = df[~df['Client'].str.contains('TBF')]
+df
 
 # %%
 df['Date Invoice']      = df['Date Invoice'].replace("", 0)
@@ -46,6 +49,7 @@ df['Paid VND']          = df['Paid VND'].astype(float)
 df['EQ VND (auto)']     = df['EQ VND (auto)'].astype(int)
 df['Paid VND']          = df['Paid VND'].astype(int)
 
+df.info()
 
 # %%
 def convert_date(number):
@@ -62,7 +66,7 @@ df['Date Paid']     = df['Date Paid'].apply(convert_date)
 df['Date Invoice']  = pd.to_datetime(df['Date Invoice'])
 df['Date Due']      = pd.to_datetime(df['Date Due'])
 df['Date Paid']     = pd.to_datetime(df['Date Paid'])
-
+df
 
 # %%
 df['Date Invoice']          = df['Date Invoice'].dt.date
@@ -72,5 +76,10 @@ df['Date Paid']             = df['Date Paid'].dt.date
 
 df = df[df['Date Invoice'] >= date(2022,1,1)]
 df
+
+# %%
+# ---------CREATE REQUIREMENTS FILE
+# pip install pipreqs
+# pipreqs 'D:\Documents\Ty\THE BIM FACTORY 4.7.2022\Streamlit_app\TBF_Payments' --encoding=utf-8
 
 
