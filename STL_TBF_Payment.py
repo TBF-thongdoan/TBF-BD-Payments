@@ -17,7 +17,7 @@ st.title('BIM Fee for Raffles MUR TD & SD')
 st.sidebar.header("Options filter")
 
 # %%
-ss_cred_path = r'D:\Documents\Ty\THE BIM FACTORY 4.7.2022\Streamlit_app\credentials2.json' # Your path to the json credential file
+ss_cred_path = 'credentials2.json' # Your path to the json credential file
 scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive'] # define the scope
 creds = ServiceAccountCredentials.from_json_keyfile_name(ss_cred_path, scope) # add credentials to the account
 client = gspread.authorize(creds) # authorize the clientsheet
