@@ -17,7 +17,7 @@ st.title('BIM Fee for Raffles MUR TD & SD')
 st.sidebar.header("Options filter")
 
 # %%
-ss_cred_path = 'credentials2.json' # Your path to the json credential file
+ss_cred_path = r'D:\Documents\Ty\THE BIM FACTORY 4.7.2022\Streamlit_app\credentials2.json' # Your path to the json credential file
 scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive'] # define the scope
 creds = ServiceAccountCredentials.from_json_keyfile_name(ss_cred_path, scope) # add credentials to the account
 client = gspread.authorize(creds) # authorize the clientsheet
@@ -30,7 +30,7 @@ df.columns = df.iloc[0]
 df = df.drop(df.index[0])
 df = df.drop(['Notes','Invoice No.', 'Original Amount', 'Currency'], axis=1)
 df = df[~df['Client'].str.contains('TBF')]
-df
+print(df)
 
 # %%
 df['Date Invoice']      = df['Date Invoice'].replace("", 0)
@@ -49,7 +49,7 @@ df['Paid VND']          = df['Paid VND'].astype(float)
 df['EQ VND (auto)']     = df['EQ VND (auto)'].astype(int)
 df['Paid VND']          = df['Paid VND'].astype(int)
 
-df.info()
+print(df.info())
 
 # %%
 def convert_date(number):
@@ -66,7 +66,7 @@ df['Date Paid']     = df['Date Paid'].apply(convert_date)
 df['Date Invoice']  = pd.to_datetime(df['Date Invoice'])
 df['Date Due']      = pd.to_datetime(df['Date Due'])
 df['Date Paid']     = pd.to_datetime(df['Date Paid'])
-df
+print(df)
 
 # %%
 df['Date Invoice']          = df['Date Invoice'].dt.date
@@ -78,6 +78,12 @@ df = df[df['Date Invoice'] >= date(2022,1,1)]
 df
 
 # %%
+
+
+# %%
+# RUN STREAMLIT FILE
+# streamlit run "D:\Documents\Ty\THE BIM FACTORY 4.7.2022\Streamlit_app\TBF_Payments\STL_TBF_Payment.py"
+
 # ---------CREATE REQUIREMENTS FILE
 # pip install pipreqs
 # pipreqs 'D:\Documents\Ty\THE BIM FACTORY 4.7.2022\Streamlit_app\TBF_Payments' --encoding=utf-8
