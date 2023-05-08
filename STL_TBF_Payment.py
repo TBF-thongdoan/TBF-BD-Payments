@@ -77,6 +77,30 @@ df['Date Paid']             = df['Date Paid'].dt.date
 df = df[df['Date Invoice'] >= date(2022,1,1)]
 df
 
+chart2   =  make_subplots ( specs = [[{ "secondary_y" :  True}]]) 
+chart2 .add_trace(
+        go.Bar(x=df['Date Invoice'], y=df['Client'],
+               name= 'Participants by date',
+               marker_color = '#333333', 
+               text=df['Client']),
+               secondary_y=False)
+
+chart2 .update_layout(yaxis2 = dict(range = [0,10000]),
+                      yaxis1 = dict (range = [0,10000]),
+                      xaxis = dict(type='date',
+                                nticks=40,
+                                tickformat="%d\n%b - %Y",
+                                tickangle=0,)
+                        )
+chart2.update_layout(legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.3,
+            xanchor="left",
+            x=0.05
+            ))
+
+st.plotly_chart(chart2, use_container_width=True)
 # %%
 
 
@@ -87,5 +111,4 @@ df
 # ---------CREATE REQUIREMENTS FILE
 # pip install pipreqs
 # pipreqs 'D:\Documents\Ty\THE BIM FACTORY 4.7.2022\Streamlit_app\TBF_Payments' --encoding=utf-8
-
 
