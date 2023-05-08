@@ -15,7 +15,7 @@ st.set_page_config(page_icon= 'https://static.wixstatic.com/media/91d4d0_50c2e78
 st.title('BIM Fee for Raffles MUR TD & SD')
 
 # %%
-ss_cred_path = r'\credentials2.json' # Your path to the json credential file
+ss_cred_path = '/credentials2.json' # Your path to the json credential file
 scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive'] # define the scope
 creds = ServiceAccountCredentials.from_json_keyfile_name(ss_cred_path, scope) # add credentials to the account
 client = gspread.authorize(creds) # authorize the clientsheet
