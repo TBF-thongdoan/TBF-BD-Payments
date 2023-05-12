@@ -205,19 +205,18 @@ st.set_page_config(page_icon= 'https://static.wixstatic.com/media/91d4d0_50c2e78
 st.title('TBF - BD - Monthly Payments Report')
 st.sidebar.header("Options filter")
 
+st.plotly_chart(chart_Payments, use_container_width=True)
 
 Client_Active = st.checkbox('Client Active')
-@st.cache_data  # 👈 Add the caching decorator
-def load_data():
-    Client_Active = False
-    
-    if Client_Active:
-        st.plotly_chart(chart_Active, use_container_width=True)
-    else:
-        st.plotly_chart(chart_No_Active, use_container_width=True)
-        
 
-load_data()
+# def load_data():
+#     Client_Active = False
+    
+if Client_Active:
+    st.plotly_chart(chart_Active, use_container_width=True)
+else:
+    st.plotly_chart(chart_No_Active, use_container_width=True)
+
 
 
 
