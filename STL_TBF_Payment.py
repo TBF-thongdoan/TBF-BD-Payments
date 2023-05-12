@@ -12,7 +12,7 @@ from datetime import date, datetime, timedelta
 # %%
 #------------------------------------------------------------------------------------PHẦN TIÊU ĐỀ WEB-------------------------------------------------------------------------------------
 st.set_page_config(page_icon= 'https://static.wixstatic.com/media/91d4d0_50c2e78106264db2a9ddda29a7ad0503~mv2.png/v1/fit/w_2500,h_1330,al_c/91d4d0_50c2e78106264db2a9ddda29a7ad0503~mv2.png',page_title='THE BIM FACTORY', layout='wide')
-st.title('BIM Fee for Raffles MUR TD & SD')
+st.title('TBF - BD - PAYMENTS')
 
 st.sidebar.header("Options filter")
 
@@ -47,7 +47,7 @@ df['EQ VND (auto)']     = df['EQ VND (auto)'].astype(float)
 df['Paid VND']          = df['Paid VND'].astype(float)
 
 
-print(df.info())
+
 
 # %%
 def convert_date(number):
@@ -65,6 +65,13 @@ df['Date Invoice']  = pd.to_datetime(df['Date Invoice'])
 df['Date Due']      = pd.to_datetime(df['Date Due'])
 df['Date Paid']     = pd.to_datetime(df['Date Paid'])
 
+# group_EQVND = df.groupby(['TaskType' , 'ProjectRule'], as_index=False)['TSHour'].sum()
+# group1 = df.groupby(pd.Grouper(key='Date Invoice', freq='M'))['EQ VND (auto)'].sum().reset_index()
+# group2 = df.groupby(pd.Grouper(key='Date Invoice', freq='M'))['Client'].nunique().reset_index()
+# group = group1.join(group2.set_index(['Date Invoice']), on=(['Date Invoice']))
+group = df.groupby(pd.Grouper(key='Date Paid', freq='M')).agg({'EQ VND (auto)': 'sum', 'Client': 'nunique'}).reset_index()
+
+
 
 # %%
 df['Date Invoice']          = df['Date Invoice'].dt.date
@@ -72,16 +79,21 @@ df['Date Due']              = df['Date Due'].dt.date
 df['Date Paid']             = df['Date Paid'].dt.date
 
 
-df = df[df['Date Invoice'] >= date(2022,1,1)]
-df
+df = df[df['Date Invoice'] >= date(2023,1,1)]
+
+group =group[group['Date Paid'] >= datetime(2023,1,1)]
+
 
 chart2   =  make_subplots ( specs = [[{ "secondary_y" :  True}]]) 
 chart2 .add_trace(
-        go.Bar(x=df['Date Invoice'], y=df['EQ VND (auto)'],
+        go.Bar(x=group['Date Paid'], y=group['EQ VND (auto)'] ,
                name= 'Participants by date',
-               marker_color = '#333333', 
-               text=df['Client']),
+               marker_color = '#333333',),
                secondary_y=False)
+
+print(group)
+
+
 
 
 
