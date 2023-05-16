@@ -136,16 +136,27 @@ chart_Payments.update_layout(
 
 # %% BIỀU ĐỒ 2: TOP 10 CLIENTS --------------------------------------------
 dash_Top_Client = df
+dash_Top_Client_1 = dash_Top_Client.groupby(['Status', 'Client'])['Remaining Amount (R)'].sum().reset_index()
 dash_Top_Client = dash_Top_Client.loc[(dash_Top_Client['Status'] != '3-Forecasted') & (dash_Top_Client['Status'] != '-1-Disputed') & (dash_Top_Client['Status'] != '4-Temp') ]
 
 # Lấy ra danh sách TOP 10 Client cao nhất từ trước tới giờ
-dash_Top_Client_1 = dash_Top_Client.groupby(['Status', 'Client'])['Remaining Amount (R)'].sum().reset_index()
-
 dash_Top_Client_1_CheckClient   = dash_Top_Client.groupby(['Client'])['Remaining Amount (R)'].sum().reset_index()
 top_10_clients                  = dash_Top_Client_1_CheckClient.nlargest(10, 'Remaining Amount (R)')
 client_list                     = top_10_clients['Client'].to_list()
 
 dash_Top_Client_1 = dash_Top_Client_1[dash_Top_Client_1['Client'].isin(client_list)]
+
+
+# Lấy ra danh sách TOP 10 Client Active
+dash_Top_Client     = dash_Top_Client[dash_Top_Client['Date Paid (R)'] >= datetime(2023,1,1)]
+dash_Top_Client_2   = dash_Top_Client.groupby(['Status', 'Client'])['Active Remaining Amount (R)'].sum().reset_index()
+
+dash_Top_Client_2_CheckClient   = dash_Top_Client.groupby(['Client'])['Active Remaining Amount (R)'].sum().reset_index()
+top_10_clients2                 = dash_Top_Client_2_CheckClient.nlargest(10, 'Active Remaining Amount (R)')
+client_list_2                   = top_10_clients2['Client'].to_list()
+
+dash_Top_Client_2 = dash_Top_Client_2[dash_Top_Client_2['Client'].isin(client_list_2)]
+
 
 
 chart_No_Active = px.bar(dash_Top_Client_1,
@@ -167,33 +178,22 @@ chart_No_Active.update_layout(legend=dict(
 )
 
 
-# Lấy ra danh sách TOP 10 Client Active
-dash_Top_Client     = dash_Top_Client[dash_Top_Client['Date Paid (R)'] >= datetime(2023,1,1)]
-dash_Top_Client_2   = dash_Top_Client.groupby(['Status', 'Client'])['Active Remaining Amount (R)'].sum().reset_index()
+# chart_Active = px.bar(dash_Top_Client_2,
+#                 x='Active Remaining Amount (R)', y='Client' ,
+#                 orientation='h',
+#                 color='Status',
+#                 # text_auto=True,
+#                 color_discrete_sequence=['gray','#ef233c','#0353a4'],
+#                 )
 
-dash_Top_Client_2_CheckClient   = dash_Top_Client.groupby(['Client'])['Active Remaining Amount (R)'].sum().reset_index()
-top_10_clients2                 = dash_Top_Client_2_CheckClient.nlargest(10, 'Active Remaining Amount (R)')
-client_list_2                   = top_10_clients2['Client'].to_list()
-
-dash_Top_Client_2 = dash_Top_Client_2[dash_Top_Client_2['Client'].isin(client_list_2)]
-
-
-chart_Active = px.bar(dash_Top_Client_2,
-                x='Active Remaining Amount (R)', y='Client' ,
-                orientation='h',
-                color='Status',
-                # text_auto=True,
-                color_discrete_sequence=['gray','#ef233c','#0353a4'],
-                )
-
-chart_Active.update_layout(legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=-0.4,
-            xanchor="left",
-            x=0.01
-            )
-            )
+# chart_Active.update_layout(legend=dict(
+#             orientation="h",
+#             yanchor="bottom",
+#             y=-0.4,
+#             xanchor="left",
+#             x=0.01
+#             )
+#             )
 
 
 
@@ -203,24 +203,28 @@ chart_Active.update_layout(legend=dict(
 #------------------------------------------------------------------------------------PHẦN TIÊU ĐỀ WEB-------------------------------------------------------------------------------------
 st.set_page_config(page_icon= 'https://static.wixstatic.com/media/91d4d0_50c2e78106264db2a9ddda29a7ad0503~mv2.png/v1/fit/w_2500,h_1330,al_c/91d4d0_50c2e78106264db2a9ddda29a7ad0503~mv2.png',page_title='TBF Payment Monthly', layout='wide')
 st.title('TBF - BD - Monthly Payments Report')
+
 st.sidebar.header("Options filter")
+
 
 st.plotly_chart(chart_Payments, use_container_width=True)
 
-Client_Active = st.checkbox('Client Active')
+
 
 # def load_data():
 #     Client_Active = False
     
-if Client_Active:
-    st.plotly_chart(chart_Active, use_container_width=True)
+
+
+
+
+# Tạo một selectbox trong sidebar với danh sách tùy chọn
+selected_option = st.sidebar.checkbox("Active") 
+
+if selected_option :
+    st.write("1")
 else:
-    st.plotly_chart(chart_No_Active, use_container_width=True)
-
-
-
-
-
+    st.write("2")
 
 # @st.cache_data  # 👈 Add the caching decorator
 # def load_data(url):
