@@ -213,10 +213,6 @@ st.plotly_chart(chart_Payments, use_container_width=True)
 
 # def load_data():
 #     Client_Active = False
-    
-
-
-
 
 # Tạo một selectbox trong sidebar với danh sách tùy chọn
 selected_option = st.sidebar.checkbox("Active") 
