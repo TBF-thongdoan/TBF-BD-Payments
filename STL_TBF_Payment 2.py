@@ -236,4 +236,4 @@ with col2:
 
 # ---------CREATE REQUIREMENTS FILE
 # pip install pipreqs
-# pipreqs 'D:\Documents\Ty\THE BIM FACTORY 4.7.2022\Streamlit_app\TBF_Payments' --encoding=utf-8
+# pipreqs 'D:\Documents\Ty\THE BIM FACTORY 4.7.2022\Streamlit_app\TBF_Payments\TBF-BD-Payments' --encoding=utf-8 (--force (Để ghi đè lên tệp đã tồn tại))
