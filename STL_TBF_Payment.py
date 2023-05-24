@@ -1,3 +1,4 @@
+from typing import Dict, Set
 import pandas as pd
 import streamlit as st
 import plotly.express as px
@@ -9,7 +10,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import date, datetime, timedelta
 
-st.set_page_config(page_icon= 'https://static.wixstatic.com/media/91d4d0_50c2e78106264db2a9ddda29a7ad0503~mv2.png/v1/fit/w_2500,h_1330,al_c/91d4d0_50c2e78106264db2a9ddda29a7ad0503~mv2.png',page_title='TBF Payment Monthly', layout='wide')
+st.set_page_config(page_icon = 'https://static.wixstatic.com/media/91d4d0_50c2e78106264db2a9ddda29a7ad0503~mv2.png/v1/fit/w_2500,h_1330,al_c/91d4d0_50c2e78106264db2a9ddda29a7ad0503~mv2.png',page_title='TBF Payment Monthly', layout='wide')
 
 
 # Hàm chuyển ngày dạng timestamp thành dạng ngày
@@ -19,16 +20,13 @@ def convert_date(number):
     result_date     = start_date + delta
     return result_date.strftime('%m/%d/%Y')
 
-# Hàm giảm đi 30 ngày
-def subtract_day(date_str):
-    date_str        = str (date_str)
-    date_obj        = datetime.fromisoformat(date_str)
-    unix_time       = int(date_obj.timestamp())
-    new_unix_time   = unix_time - 86400 * 28
-    new_date_obj    = datetime.fromtimestamp(new_unix_time)
-    new_date_str    = new_date_obj.strftime('%Y-%m-%d')
-    return new_date_str
+def initialize_state():
+    if "seleted_bar" not in st.session_state:
+        st.session_state["seleted_bar"] = set()
+    # if "button_refresh" not in st.session_state:
+    #     st.session_state["button_refresh"] = False
 
+    
 @st.cache_data
 def load_data() -> pd.DataFrame:
     ss_cred_path    = 'credentials2.json' # Your path to the json credential file
@@ -71,16 +69,37 @@ def load_data() -> pd.DataFrame:
     return df
 
 
+def query_data(df: pd.DataFrame) -> pd.DataFrame:
+    # Chuyển tất cả giá trị trong cột ngày "Date Paid" về cùng một tháng - sau đó đưa lại về kiểu dữ liệu DateTime để biểu đồ có thể hiểu
+    df['Date Paid (R)'] = df['Date Paid (R)'].dt.strftime('%m/%Y')
+    df['Date Paid (R)'] = pd.to_datetime(df['Date Paid (R)'])
+    df['Date Paid (R)'] = df['Date Paid (R)'].dt.strftime('%Y-%m-%d')
+    df['Date Paid (R)'] = pd.to_datetime(df['Date Paid (R)'])
+    
+    df ["selected"] = False
+    if st.session_state["seleted_bar"]:
+        df.loc[df['Date Paid (R)'].isin(st.session_state["seleted_bar"]), "selected"] = True
+        df['Date Paid (R)'] = pd.to_datetime(df['Date Paid (R)'])
+        df = df.loc[df['selected'] == True]
+
+    return df
+
+
 def build_data_for_chart_payments(df: pd.DataFrame) -> pd.DataFrame:
     df_Payment      = df
     df_Payment      = df_Payment[df_Payment['Date Paid (R)'] >= datetime(2023,1,1)]
+    
+    # Chuyển tất cả giá trị trong cột ngày "Date Paid" về cùng một tháng - sau đó đưa lại về kiểu dữ liệu DateTime để biểu đồ có thể hiểu
+    df_Payment['Date Paid (R)'] = df_Payment['Date Paid (R)'].dt.strftime('%m/%Y')
+    df_Payment['Date Paid (R)'] = pd.to_datetime(df_Payment['Date Paid (R)'])
+    
+    # Loại bỏ những Status không muốn lấy
     df_Payment      = df_Payment.loc[(df_Payment['Status'] != '3-Forecasted') & (df_Payment['Status'] != '-1-Disputed') & (df_Payment['Status'] != '4-Temp') ]
 
-    df_Payment_1    = df_Payment.groupby(['Status', pd.Grouper(key='Date Paid (R)', freq='M')])['Remaining Amount (R)'].sum().reset_index()
-    df_Payment_2    = df_Payment.groupby([pd.Grouper(key='Date Paid (R)', freq='M')])['Remaining Amount (R)'].sum().reset_index()
+    # Group lại những giá trị có cùng Status và sau đó là cùng ngày
+    df_Payment_1    = df_Payment.groupby(['Status', pd.Grouper(key='Date Paid (R)')])['Remaining Amount (R)'].sum().reset_index()
+    df_Payment_2    = df_Payment.groupby([pd.Grouper(key='Date Paid (R)')])['Remaining Amount (R)'].sum().reset_index()
 
-    df_Payment_1['Date Paid (R)'] = df_Payment_1['Date Paid (R)'].apply(subtract_day)
-    df_Payment_2['Date Paid (R)'] = df_Payment_2['Date Paid (R)'].apply(subtract_day)
     return df_Payment_1, df_Payment_2
 
 
@@ -114,12 +133,8 @@ def build_chart_payments(df: pd.DataFrame) -> go.Figure:
                         )
 
     chart_Payments.update_layout(yaxis1  = dict(range = [0,10000000000]),
-                                yaxis2  = dict (range = [0,40000000000]),
-                                xaxis   = dict(type='date',
-                                            # nticks=40,
-                                            # tickformat="%d\n%b - %Y",
-                                            # tickangle=0,
-                                            )
+                                yaxis2  = dict (range = [0,50000000000]),
+                                xaxis   = dict(type='date')
                                 )
 
     chart_Payments.update_layout(
@@ -185,6 +200,9 @@ def build_chart_Client_Active (df: pd.DataFrame, selected_option) -> px.bar:
         Y                       = 'Client'
         TITLE                   = 'TOP 10 clients'
 
+    # Ánh xạ giá trị với màu sắc tương ứng
+    color_map = {'0-Fully Paid': 'gray', '1-Outstanding': '#ef233c', '2-Contracted': '#0353a4'}
+
     chart_Active = px.bar(df_ACTIVE_or_NoACTIVE,
                     x                       = X,
                     y                       = Y,
@@ -192,7 +210,7 @@ def build_chart_Client_Active (df: pd.DataFrame, selected_option) -> px.bar:
                     orientation             = 'h',
                     color                   = 'Status',
                     # text_auto             = True,
-                    color_discrete_sequence = ['gray','#ef233c','#0353a4']
+                    color_discrete_map=color_map
     )
 
     chart_Active.update_layout(legend=dict(
@@ -229,37 +247,63 @@ def render_preview_ui(df: pd.DataFrame):
 
 
 def render_plotly_ui(df: pd.DataFrame):
+    
+    # refresh_button = st.button("Refresh Select")
+
     chart_payments      = build_chart_payments(df)
     selected_bar        = plotly_events (
         chart_payments,
-        click_event=True,
+        select_event=True,
+        click_event=False
     )
-    st.write(selected_bar)
 
+    current_query = {}
+    current_query = {el["x"] for el in selected_bar}
+    
+    return current_query
+
+
+def render_plotly_ui2(df: pd.DataFrame):
     # Tạo một selectbox trong sidebar với danh sách tùy chọn
     selected_option = (st.checkbox("Clients no ACTIVE") == False)
     
-    chart_client_active = build_chart_Client_Active(df, selected_option)
-    df_list_clients     = load_data_client_list(df)    
+    chart_client_active  = build_chart_Client_Active(df, selected_option)
+    df_list_clients      = load_data_client_list(df)    
     
     col1, col2 = st.columns(2)
+    
     with col1:
         st.plotly_chart(chart_client_active, use_container_width=True)
         
     with col2:
         st.dataframe(df_list_clients, use_container_width=True)
+
+
+def update_state(current_query: Dict[str, Set]):
+    # if refresh_button:
+    #     st.session_state["button_refresh"] = refresh_button
+    rerun = False
+    st.session_state["seleted_bar"] = set(st.session_state["seleted_bar"])
+    if current_query - st.session_state["seleted_bar"]:
+        st.session_state["seleted_bar"] = current_query
+        rerun = True
+    if rerun:
+        st.experimental_rerun()
         
 def main():
-    #------------------------------------------------------------------------------------PHẦN TIÊU ĐỀ WEB-------------------------------------------------------------------------------------
     st.title('TBF - BD - Monthly Payments Report')
     
     df = load_data()
+    transform_df = query_data(df)
+    
     render_preview_ui(df)
-    render_plotly_ui(df)
     
-        
-    # current_query = render_preview_ui(df)
+    current_query = render_plotly_ui(df)
+    render_plotly_ui2(transform_df)
     
+    update_state(current_query)
+
     
 if __name__ == "__main__":
+    initialize_state()
     main()
