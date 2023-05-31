@@ -448,3 +448,9 @@ if __name__ == "__main__":
 
 
 
+# RUN STREAMLIT FILE
+# streamlit run "D:\Documents\Ty\THE BIM FACTORY 4.7.2022\Streamlit_app\TBF_Payments\STL_TBF_Payment.py"
+
+# ---------CREATE REQUIREMENTS FILE
+# pip install pipreqs
+# pipreqs 'path' --encoding=utf-8 ( --force (Để ghi đè lên tệp đã tồn tại) )
