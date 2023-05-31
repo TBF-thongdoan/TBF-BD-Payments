@@ -7,18 +7,7 @@ from datetime import date, datetime, timedelta
 import pandas as pd
 
 st.set_page_config(page_icon = 'https://static.wixstatic.com/media/91d4d0_50c2e78106264db2a9ddda29a7ad0503~mv2.png/v1/fit/w_2500,h_1330,al_c/91d4d0_50c2e78106264db2a9ddda29a7ad0503~mv2.png',page_title='TBF Payments', layout='wide')
-    
 
-def initialize_state():
-    if "selected_bar" not in st.session_state:
-        st.session_state["selected_bar"] = None
-
-# Hàm chuyển ngày dạng timestamp thành dạng ngày
-def convert_date(number):
-    delta           = timedelta(days=number - 2)
-    start_date      = date(1900, 1, 1)
-    result_date     = start_date + delta
-    return result_date.strftime('%m/%d/%Y')
 
 
 @st.cache_data
@@ -82,6 +71,41 @@ def load_data():
 def format_value(value):
     values = int(value / 1000000)
     return values
+
+
+def initialize_state():
+    if "selected_bar" not in st.session_state:
+        st.session_state["selected_bar"] = None
+
+# Hàm chuyển ngày dạng timestamp thành dạng ngày
+def convert_date(number):
+    delta           = timedelta(days=number - 2)
+    start_date      = date(1900, 1, 1)
+    result_date     = start_date + delta
+    return result_date.strftime('%m/%d/%Y')
+
+# Tạo hàm để tô màu các hàng nếu có một ô trong cột B chứa ký tự "ABS"
+def highlight_rows(row):
+    if '0-' in str(row['Status']):
+        return [''] * len(row)
+    
+    elif  '-1-Disputed' in str(row['Status']):
+        return ['background-color: #e9ecef'] * len(row)
+    elif  '1-' in str(row['Status']):
+        return ['background-color: #fae0e4'] * len(row)
+        
+    elif '2-' in str(row['Status']):
+        return ['background-color: #e2eafc'] * len(row)
+        
+    elif  '3-' in str(row['Status']):
+        return ['background-color: #d8f3dc'] * len(row)
+        
+    elif  '4-' in str(row['Status']):
+        return ['background-color: #fff6cc'] * len(row)
+        
+    
+        
+    return [''] * len(row)
 
 
 def build_data_for_chart_payments(df: pd.DataFrame) -> pd.DataFrame:
@@ -189,7 +213,7 @@ def build_chart_payments(df: pd.DataFrame) -> dict:
                 "label": {
                     "show": True,
                     "formatter": "{c} M"
-                    },
+                },
                 "stack": "1", 
                 "yAxisIndex": 0,
                 "itemStyle": {
@@ -333,6 +357,10 @@ def build_chart_Client_Active (df: pd.DataFrame, selected_option):
                 "data": bar_series_data[status],
                 "stack": "1",
                 "xAxisIndex": 0,
+                "label": {
+                    "show": True,
+                    "formatter": "{c} M"
+                },
                 "itemStyle": {
                     "color": colors[i % len(colors)],
                     "opacity": 1,
@@ -361,12 +389,22 @@ def load_data_client_list(df: pd.DataFrame) -> pd.DataFrame:
 
     group_df_List_Client['Days Late']           = group_df_List_Client['Days Late'].astype(int)
     group_df_List_Client['Remaining Amount']    = group_df_List_Client['Remaining Amount'] .apply(lambda x: '{:,.0f}  VND'.format(x))
+
+
+    # Áp dụng hàm tô màu vào DataFrame
+    group_df_List_Client = group_df_List_Client.style.apply(highlight_rows, axis=1)
     
     return group_df_List_Client
 
 
 def render_preview_ui(df: pd.DataFrame):
-    df = df[["Status", "Client", "Date Invoice", "Date Paid", "Remaining Amount"]]
+    df                  = df[["Status", "Client", "Date Invoice", "Date Paid", "Remaining Amount"]]
+    df['Date Paid']     = df['Date Paid'].dt.strftime('%Y %b %d')
+    df['Date Invoice']  = df['Date Invoice'].dt.strftime('%Y %b %d')
+    
+    # Áp dụng hàm tô màu vào DataFrame
+    df                  = df.style.apply(highlight_rows, axis=1)
+    
     with st.expander('Preview all data payments'):
         st.dataframe(df, use_container_width=True)
 
