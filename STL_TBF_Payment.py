@@ -425,7 +425,7 @@ def main():
     render_preview_ui(df)
     option_payments     = build_chart_payments(df)
     transform_df        = query_data(df)
-    btn_refresh         = st.button("Refesh")
+    btn_refresh         = st.button("Refresh")
     
     if btn_refresh:
         #Resfesh lại dữ liệu ban đầu 
