@@ -8,8 +8,6 @@ import pandas as pd
 
 st.set_page_config(page_icon = 'https://static.wixstatic.com/media/91d4d0_50c2e78106264db2a9ddda29a7ad0503~mv2.png/v1/fit/w_2500,h_1330,al_c/91d4d0_50c2e78106264db2a9ddda29a7ad0503~mv2.png',page_title='TBF Payments', layout='wide')
 
-
-
 @st.cache_data
 def load_data():
     ss_cred_path    = 'credentials2.json' # Your path to the json credential file
@@ -24,7 +22,7 @@ def load_data():
     df          = df.drop(df.index[0])
     df          = df[~df['Client'].str.contains('TBF')]
     df          = df.drop([' EQ VND (auto) ',' Paid VND ', 'Date Due', 'Date Invoice', 'Date Paid','Invoice No.', 'Original Amount','Project Name'], axis=1)
-    df          = df.loc[(df['Status'] != '')]
+    df          = df.loc[(df['Status'] != '')]    
     
     df = df.rename(columns={'Date Paid (R)':                'Date Paid'})
     df = df.rename(columns={'Date Invoice (R)':             'Date Invoice'})
@@ -419,6 +417,7 @@ def query_data(df: pd.DataFrame) -> pd.DataFrame:
         df.loc[df['Date Paid'] == st.session_state["selected_bar"], "selected"] = True
         df = df.loc[df['selected'] == True]
         return df
+    
 
 
 def update_state(mouseover_label: str, year: str):
@@ -463,10 +462,12 @@ def main():
     render_preview_ui(df)
     option_payments     = build_chart_payments(df)
     transform_df        = query_data(df)
+    
     btn_refresh         = st.button("Refresh")
     
     if btn_refresh:
-        #Resfesh lại dữ liệu ban đầu 
+        #Resfesh lại dữ liệu ban đầu
+        df, year_of_df      = load_data() 
         st.experimental_rerun()
         
     mouseover_label = st_echarts(option_payments,
