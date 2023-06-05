@@ -284,6 +284,14 @@ def build_data_for_chart_Client_Active (df: pd.DataFrame) -> pd.DataFrame:
     sort_column2        = ['Active Clientss','0-Fully Paid', '1-Outstanding', '2-Contracted']
     df_Top_Client_1     = df_Top_Client_1.reindex(columns=sort_column)
     df_Top_Client_2     = df_Top_Client_2.reindex(columns=sort_column2)
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.dataframe(df_Top_Client_1, use_container_width=True)
+        
+    with col2:
+        st.dataframe(df_Top_Client_2, use_container_width=True)
+
 
     return df_Top_Client_1, df_Top_Client_2
 
@@ -435,16 +443,13 @@ def update_state(mouseover_label: str, year: str):
     else:
         if st.session_state["selected_bar"] != None:
             st.session_state["selected_bar"] = None
-            st.write(st.session_state)
             st.experimental_rerun()
-
+    
     if rerun:
         st.experimental_rerun()
 
 
-def render_plotly_ui2(df: pd.DataFrame):
-    selected_option         = (st.checkbox("Clients no ACTIVE") == False)
-    
+def render_plotly_ui(df: pd.DataFrame,  selected_option):
     options_active          = build_chart_Client_Active(df, selected_option)
     df_list_clients         = load_data_client_list(df)    
     
@@ -459,16 +464,22 @@ def render_plotly_ui2(df: pd.DataFrame):
 def main():
     initialize_state()
     df, year_of_df      = load_data()
-    render_preview_ui(df)
     option_payments     = build_chart_payments(df)
     transform_df        = query_data(df)
+    render_preview_ui(df)
     
     btn_refresh         = st.button("Refresh")
     
     if btn_refresh:
         #Resfesh lại dữ liệu ban đầu
-        df, year_of_df      = load_data() 
+        # st.session_state.checkbox_value = False
+        if st.session_state["selected_bar"] != None:
+            st.session_state["selected_bar"] = None
+
         st.experimental_rerun()
+        
+    st.write(st.session_state)
+
         
     mouseover_label = st_echarts(option_payments,
                              events={
@@ -476,9 +487,11 @@ def main():
                                  "CLICK": "function(params) {return params.name}"
                              },
                              height="30rem")
-
+    
+    selected_option         = (st.checkbox("Clients no ACTIVE") == False)
+    
     update_state(mouseover_label, year_of_df)
-    render_plotly_ui2(transform_df)
+    render_plotly_ui(transform_df, selected_option)
 
 if __name__ == "__main__":
     
@@ -492,4 +505,4 @@ if __name__ == "__main__":
 
 # ---------CREATE REQUIREMENTS FILE
 # pip install pipreqs
-# pipreqs 'path' --encoding=utf-8 ( --force (Để ghi đè lên tệp đã tồn tại) )
+# pipreqs 'path' --encoding=utf-8 --force ( --force (Để ghi đè lên tệp đã tồn tại) )
