@@ -285,13 +285,6 @@ def build_data_for_chart_Client_Active (df: pd.DataFrame) -> pd.DataFrame:
     df_Top_Client_1     = df_Top_Client_1.reindex(columns=sort_column)
     df_Top_Client_2     = df_Top_Client_2.reindex(columns=sort_column2)
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.dataframe(df_Top_Client_1, use_container_width=True)
-        
-    with col2:
-        st.dataframe(df_Top_Client_2, use_container_width=True)
-
 
     return df_Top_Client_1, df_Top_Client_2
 
@@ -466,20 +459,16 @@ def main():
     df, year_of_df      = load_data()
     option_payments     = build_chart_payments(df)
     transform_df        = query_data(df)
-    render_preview_ui(df)
-    
+
     btn_refresh         = st.button("Refresh")
     
     if btn_refresh:
-        #Resfesh lại dữ liệu ban đầu
-        # st.session_state.checkbox_value = False
-        if st.session_state["selected_bar"] != None:
-            st.session_state["selected_bar"] = None
+    #     #Resfesh lại dữ liệu ban đầu
+    #     # st.session_state.checkbox_value = False
+    #     if st.session_state["selected_bar"] != None:
+    #         st.session_state["selected_bar"] = None
 
         st.experimental_rerun()
-        
-    st.write(st.session_state)
-
         
     mouseover_label = st_echarts(option_payments,
                              events={
@@ -492,6 +481,7 @@ def main():
     
     update_state(mouseover_label, year_of_df)
     render_plotly_ui(transform_df, selected_option)
+    render_preview_ui(df)
 
 if __name__ == "__main__":
     
